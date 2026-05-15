@@ -22,10 +22,10 @@ export const Route = createFileRoute("/operacao")({
   component: OperationDashboard,
   head: () => ({
     meta: [
-      { title: "Operação · Talent OS" },
+      { title: "Governança & Execução · Talent OS" },
       {
         name: "description",
-        content: "Gestão operacional, treinamento e estrutura organizacional.",
+        content: "Gestão de ritos, reuniões e governança da execução estratégica.",
       },
     ],
   }),
@@ -35,27 +35,29 @@ function OperationDashboard() {
   const [view, setView] = useState<"dashboard" | "settings">("dashboard");
 
   return (
-    <AppShell activeNav="operacao">
+    <AppShell activeNav="estrategia-resultados">
       <main className="mx-auto max-w-[1400px] px-6 py-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Módulo de Operação · {view === "dashboard" ? "Dashboard" : "Configurações"}
+              Módulo de Estratégia e Resultados · {view === "dashboard" ? "Governança" : "Configurações"}
             </p>
             <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-              {view === "dashboard" ? "Execução & Excelência" : "Regras Operacionais"}
+              {view === "dashboard" ? "Governança & Execução" : "Regras de Governança"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {view === "dashboard"
-                ? "Gestão operacional, treinamento e estrutura organizacional."
-                : "Defina os ritos de reunião e trilhas de capacitação obrigatórias."}
+                ? "Gestão de ritos, reuniões de acompanhamento e planos de ação."
+                : "Defina os ritos de reunião e modelos de governança da execução."}
             </p>
           </div>
         </div>
 
         {/* Sub-navigation Pills */}
         <div className="mt-6 flex flex-wrap gap-2">
-          {MENUS.find(m => m.key === "operacao")?.groups?.[0]?.items.map((item) => (
+          {MENUS.flatMap(m => m.groups?.flatMap(g => g.items) || [])
+            .filter(item => ["Gestão de Treinamentos", "Reunião+"].includes(item.label))
+            .map((item) => (
             <Link
               key={item.label}
               to={item.href ?? "/operacao"}
@@ -83,25 +85,25 @@ function OperationDashboard() {
           <>
             <section className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            label="Trilhas de Treinamento"
-            value="12"
-            icon={GraduationCap}
-            tone="default"
-          />
-          <StatCard
-            label="Média de Conclusão"
-            value="78%"
-            icon={CheckCircle2}
-            tone="success"
-          />
-          <StatCard
             label="Reuniões Agendadas"
             value="15"
             icon={Video}
             tone="default"
           />
           <StatCard
-            label="Gargalos Operacionais"
+            label="Média de Participação"
+            value="94%"
+            icon={CheckCircle2}
+            tone="success"
+          />
+          <StatCard
+            label="Ações Pendentes"
+            value="28"
+            icon={Workflow}
+            tone="default"
+          />
+          <StatCard
+            label="Gargalos na Execução"
             value="2"
             icon={AlertCircle}
             tone="warning"
@@ -109,27 +111,27 @@ function OperationDashboard() {
         </section>
 
         <section className="mt-10 grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <h3 className="mb-4 text-base font-semibold text-foreground">Status dos Treinamentos</h3>
+            <div className="lg:col-span-2">
+            <h3 className="mb-4 text-base font-semibold text-foreground">Status das Reuniões de Governança</h3>
             <div className="rounded-xl border border-border bg-card overflow-hidden">
               <ul className="divide-y divide-border">
-                <TrainingRow
-                  title="Onboarding de Novos Colaboradores"
-                  status="Em andamento"
-                  progress={90}
-                  participants={42}
+                <MeetingRow
+                  title="Check-in Semanal LATAM"
+                  status="Confirmada"
+                  time="14:00"
+                  participants={12}
                 />
-                <TrainingRow
-                  title="Liderança Situacional"
-                  status="Próximo de concluir"
-                  progress={65}
-                  participants={15}
+                <MeetingRow
+                  title="Revisão de OKRs Corporativos"
+                  status="Em 2 dias"
+                  time="09:00"
+                  participants={8}
                 />
-                <TrainingRow
-                  title="Segurança da Informação 2025"
-                  status="Iniciando"
-                  progress={12}
-                  participants={1248}
+                <MeetingRow
+                  title="Alinhamento de Diretrizes 2025"
+                  status="Próxima semana"
+                  time="10:30"
+                  participants={45}
                 />
               </ul>
             </div>
@@ -178,18 +180,15 @@ function OperationDashboard() {
   );
 }
 
-function TrainingRow({ title, status, progress, participants }: { title: string; status: string; progress: number; participants: number }) {
+function MeetingRow({ title, status, time, participants }: { title: string; status: string; time: string; participants: number }) {
   return (
-    <li className="px-4 py-4 hover:bg-secondary/40">
-      <div className="flex items-center justify-between mb-2">
+    <li className="px-4 py-4 hover:bg-secondary/40 transition-colors">
+      <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-foreground">{title}</p>
-          <p className="text-xs text-muted-foreground">{participants} participantes · {status}</p>
+          <p className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground">{participants} participantes · {time} · {status}</p>
         </div>
-        <span className="text-xs font-bold text-accent">{progress}%</span>
-      </div>
-      <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
-        <div className="h-full bg-success" style={{ width: `${progress}%` }} />
+        <Link to="/operacao" className="text-xs font-bold text-accent hover:underline">Ver Pauta</Link>
       </div>
     </li>
   );

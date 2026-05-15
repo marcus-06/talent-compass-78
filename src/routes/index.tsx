@@ -12,6 +12,9 @@ import {
   Clock,
   Activity,
   AlertCircle,
+  Search,
+  MessageSquare,
+  DollarSign,
   BarChart3 as BarChartIcon,
 } from "lucide-react";
 import {
@@ -67,27 +70,159 @@ const performanceTrend = [
   { day: "28", value: 92 },
 ];
 
+import { usePerspective } from "@/hooks/usePerspective";
+import { useState, useMemo } from "react";
+import { PeriodComparator, ComparisonLegend, buildComparisonData, type ComparisonPeriod } from "@/components/shared/PeriodComparator";
+
 function ExecutiveDashboard() {
+  const { perspective } = usePerspective();
+  const [compPeriod, setCompPeriod] = useState<ComparisonPeriod>("none");
+
+  const trendDataWithComparison = useMemo(() => 
+    compPeriod !== "none" ? buildComparisonData(performanceTrend, "value", compPeriod) : performanceTrend,
+    [compPeriod]
+  );
+
+  if (perspective === "admin") {
+    return (
+      <AppShell activeNav="inicio">
+        <main className="mx-auto max-w-[1400px] px-6 py-8 animate-in fade-in duration-700">
+          <header className="mb-12">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-2">Painel de Operações</p>
+            <h1 className="text-4xl font-black tracking-tight text-foreground leading-[1.1] max-w-md">Controle de Ciclo e Gestão</h1>
+          </header>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-10">
+            <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+               <div className="flex items-center justify-between mb-6">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><ClipboardCheck className="h-5 w-5" /></div>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Ciclo Atual</span>
+               </div>
+               <h3 className="text-xl font-bold text-foreground">Avaliação 2024.1</h3>
+               <div className="mt-4 flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Progresso Global</span>
+                  <span className="text-sm font-bold text-primary">64%</span>
+               </div>
+               <div className="mt-2 h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+                  <div className="h-full bg-primary transition-all duration-1000" style={{ width: "64%" }} />
+               </div>
+            </div>
+            
+            <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+               <div className="flex items-center justify-between mb-6">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500"><Clock className="h-5 w-5" /></div>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Pendências de Gestão</span>
+               </div>
+               <h3 className="text-xl font-bold text-foreground">12 Aprovações</h3>
+               <p className="text-xs text-muted-foreground mt-1">Aguardando revisão de desligamentos e promoções.</p>
+               <button className="mt-6 w-full py-2 rounded-xl bg-secondary text-xs font-bold hover:bg-secondary/80 transition-all">Ver Todas</button>
+            </div>
+
+            <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+               <div className="flex items-center justify-between mb-6">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-success/10 text-success"><Activity className="h-5 w-5" /></div>
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase">Saúde dos Dados</span>
+               </div>
+               <h3 className="text-xl font-bold text-foreground">98.5%</h3>
+               <p className="text-xs text-muted-foreground mt-1">Campos obrigatórios preenchidos no cadastro.</p>
+               <div className="mt-4 flex -space-x-2">
+                  {[1,2,3,4].map(i => <div key={i} className="h-6 w-6 rounded-full border-2 border-card bg-secondary" />)}
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-card bg-primary text-[8px] font-bold text-white">+12</div>
+               </div>
+            </div>
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-12">
+             <div className="lg:col-span-8 space-y-6">
+                <div className="rounded-3xl border border-border bg-card p-8 shadow-sm">
+                   <h3 className="text-lg font-bold text-foreground mb-6">Próximos Marcos Operacionais</h3>
+                   <div className="space-y-4">
+                      {[
+                        { date: "Amanhã", label: "Fechamento de Folha (PPR)", status: "Urgente", color: "text-red-500" },
+                        { date: "15 Mai", label: "Treinamento de Lideranças - Módulo 2", status: "Agendado", color: "text-primary" },
+                        { date: "22 Mai", label: "Calibragem Final de Performance", status: "Preparação", color: "text-muted-foreground" },
+                      ].map((task, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 rounded-2xl border border-border/50 hover:bg-secondary/30 transition-all cursor-pointer group">
+                           <div className="flex items-center gap-4">
+                              <div className="text-center min-w-[50px]"><p className="text-[10px] font-black uppercase text-muted-foreground">{task.date}</p></div>
+                              <div className="h-10 w-px bg-border/50" />
+                              <p className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">{task.label}</p>
+                           </div>
+                           <span className={cn("text-[9px] font-black uppercase tracking-widest", task.color)}>{task.status}</span>
+                        </div>
+                      ))}
+                   </div>
+                </div>
+             </div>
+             <div className="lg:col-span-4">
+                <div className="rounded-3xl border border-border bg-card p-6 shadow-sm h-full">
+                   <h3 className="text-sm font-bold text-foreground mb-6">Atalhos Administrativos</h3>
+                   <div className="space-y-2">
+                      {[
+                        "Importar Dados (Excel/CSV)",
+                        "Gerenciar Fluxos de Aprovação",
+                        "Configurações do Sistema",
+                        "Logs de Atividade",
+                        "Suporte Mereo"
+                      ].map(link => (
+                        <button key={link} className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-secondary transition-all text-xs font-semibold text-muted-foreground hover:text-foreground">
+                           {link} <ArrowRight className="h-3.5 w-3.5" />
+                        </button>
+                      ))}
+                   </div>
+                </div>
+             </div>
+          </div>
+        </main>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell activeNav="inicio">
-      <main className="mx-auto max-w-[1400px] px-6 py-8">
-        <header className="mb-8">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Painel Executivo
-          </p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
-            Sua Organização em um Olhar
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Acompanhe a saúde e o progresso dos principais pilares da empresa.
-          </p>
+      <main className="mx-auto max-w-[1400px] px-6 py-8 animate-in fade-in duration-700">
+        <header className="mb-12 grid gap-6 lg:grid-cols-4 lg:items-center">
+          <div className="lg:col-span-2">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground/60 mb-2">
+              Painel Executivo
+            </p>
+            <h1 className="text-4xl font-bold tracking-tight text-foreground leading-[1.1] max-w-md">
+              Sua Organização em um Olhar
+            </h1>
+          </div>
+
+          {/* AI Copilot Card */}
+          <div className="lg:col-span-2">
+            <div className="rounded-3xl border border-border/50 bg-card p-6 shadow-[0_8px_30px_rgba(0,0,0,0.03)]">
+              <div className="flex items-center gap-4 mb-5">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0F172A] text-white shadow-lg">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight text-foreground leading-tight">Mereo Copilot</h2>
+                  <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest mt-0.5">IA Estratégica</p>
+                </div>
+              </div>
+
+              <div className="relative mb-4">
+                <input 
+                  type="text" 
+                  placeholder="Como posso ajudar hoje?" 
+                  className="w-full rounded-full border border-border bg-background py-3.5 pl-11 pr-32 text-sm transition-all focus:border-primary/40 focus:outline-none focus:ring-4 focus:ring-primary/5"
+                />
+                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
+                <button className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full bg-[#0a0a0b] px-6 py-2 text-[11px] font-bold text-white transition-all hover:bg-black">
+                  Perguntar
+                </button>
+              </div>
+            </div>
+          </div>
         </header>
 
-        {/* Pilares Principais */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* ESTRATÉGIA */}
+        {/* Dash Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <ModuleCard
-            title="Estratégia"
+            title="Estratégia e Resultados"
             subtitle="OKRs & Metas"
             icon={Target}
             href="/estrategia"
@@ -97,32 +232,41 @@ function ExecutiveDashboard() {
             ]}
           />
 
-          {/* TALENTOS */}
           <ModuleCard
-            title="Talentos"
-            subtitle="Performance & Desenvolvimento"
+            title="Pessoas e Talentos"
+            subtitle="Desenvolvimento & Performance"
             icon={Award}
             href="/talentos"
             metrics={[
               { label: "Conclusão Ciclo", value: "64%", tone: "success" },
-              { label: "Engajamento", value: "92%", tone: "success" },
+              { label: "Plano Sucessório", value: "85%", tone: "default" },
             ]}
           />
 
-          {/* OPERAÇÃO */}
           <ModuleCard
-            title="Operação"
-            subtitle="Estrutura & Capacitação"
-            icon={GraduationCap}
-            href="/operacao"
+            title="Engajamento e Cultura"
+            subtitle="Escuta & Experiência"
+            icon={MessageSquare}
+            href="/engajamento-cultura"
             metrics={[
-              { label: "Treinamento", value: "78%", tone: "success" },
-              { label: "Pessoas Ativas", value: "1.248", tone: "default" },
+              { label: "Pesquisa Pulse", value: "92%", tone: "success" },
+              { label: "Taxa de Feedback", value: "15/mês", tone: "default" },
+            ]}
+          />
+
+          <ModuleCard
+            title="Remuneração"
+            subtitle="Incentivos & Mérito"
+            icon={DollarSign}
+            href="/recompensa-reconhecimento"
+            metrics={[
+              { label: "Orçamento Utilizado", value: "84%", tone: "default" },
+              { label: "Elegibilidade", value: "92%", tone: "success" },
             ]}
           />
         </div>
 
-        {/* Atenção & Riscos (Insights Negativos) */}
+        {/* Atenção & Riscos */}
         <section className="mt-10 grid gap-6 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-6">
@@ -146,39 +290,30 @@ function ExecutiveDashboard() {
                 severity="medium"
                 impact="Risco de Continuidade"
               />
-              <RiskCard 
-                title="Engajamento em Treinamento"
-                desc="Queda de 18% na taxa de conclusão de trilhas obrigatórias este mês."
-                severity="medium"
-                impact="Gap de Compliance"
-              />
-              <RiskCard 
-                title="Calibragem de Performance"
-                desc="Desvio padrão < 0.5 em 3 departamentos. Possível viés de leniência."
-                severity="low"
-                impact="Qualidade da Avaliação"
-              />
             </div>
           </div>
 
-          {/* Tendência de Performance (Keep this one as it's tangible) */}
           <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-semibold text-foreground">Tendência de Performance</h3>
                 <p className="text-xs text-muted-foreground">Média global da organização</p>
               </div>
-              <TrendingUp className="h-4 w-4 text-success" />
+              <div className="flex items-center gap-3">
+                 <ComparisonLegend period={compPeriod} />
+                 <PeriodComparator value={compPeriod} onChange={setCompPeriod} />
+              </div>
             </div>
 
             <div className="h-[240px] w-full">
               <ChartContainer
                 config={{
                   value: { label: "Performance", color: "#3b82f6" },
+                  value_prev: { label: "Comparação", color: "#94a3b8" }
                 }}
                 className="h-full w-full"
               >
-                <LineChart data={performanceTrend}>
+                <LineChart data={trendDataWithComparison}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                   <XAxis
                     dataKey="day"
@@ -196,6 +331,16 @@ function ExecutiveDashboard() {
                     dot={false}
                     activeDot={{ r: 4, strokeWidth: 0 }}
                   />
+                  {compPeriod !== "none" && (
+                    <Line
+                      type="monotone"
+                      dataKey="value_prev"
+                      stroke="#94a3b8"
+                      strokeWidth={2}
+                      strokeDasharray="4 3"
+                      dot={false}
+                    />
+                  )}
                 </LineChart>
               </ChartContainer>
             </div>
@@ -205,6 +350,7 @@ function ExecutiveDashboard() {
     </AppShell>
   );
 }
+
 
 function RiskCard({ title, desc, severity, impact }: { title: string; desc: string; severity: "high" | "medium" | "low"; impact: string }) {
   const colors = {

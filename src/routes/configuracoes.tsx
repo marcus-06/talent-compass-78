@@ -1,20 +1,26 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Route as ConfiguracoesRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/talents/AppShell";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { useSearch } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import {
-  Building2,
-  ShieldCheck,
+  Video,
+  Users,
+  SlidersHorizontal,
+  Compass,
+  BookOpen,
+  ListChecks,
+  Sparkles,
   Bell,
+  ShieldCheck,
+  Building2,
   Target,
   BarChart3,
-  DollarSign,
   Award,
   Briefcase,
-  MessageSquare,
   GraduationCap,
-  Video,
+  MessageSquare,
+  DollarSign,
 } from "lucide-react";
 
 // Import settings components
@@ -22,9 +28,13 @@ import { TalentSettings } from "@/components/settings/TalentSettings";
 import { StrategySettings } from "@/components/settings/StrategySettings";
 import { OperationSettings } from "@/components/settings/OperationSettings";
 import { PlatformSettings } from "@/components/settings/PlatformSettings";
+import { CollaboratorSettings } from "@/components/settings/CollaboratorSettings";
 
 export const Route = createFileRoute("/configuracoes")({
   component: ConfigHub,
+  validateSearch: (search: Record<string, unknown>) => ({
+    tab: typeof search.tab === "string" ? search.tab : "competencias",
+  }),
   head: () => ({
     meta: [
       { title: "Central de Configurações · Mereo" },
@@ -38,58 +48,88 @@ export const Route = createFileRoute("/configuracoes")({
 
 const CONFIG_CATEGORIES = [
   {
-    id: "plataforma",
-    label: "Plataforma",
+    id: "config-gerais",
+    label: "Configurações Gerais",
     items: [
-      { id: "estrutura", label: "Estrutura Organizacional", icon: Building2 },
-      { id: "permissoes", label: "Permissões & Acessos", icon: ShieldCheck },
+      { id: "config-plataforma", label: "Configurações da Plataforma", icon: SlidersHorizontal },
       { id: "notificacoes", label: "Notificações", icon: Bell },
     ]
   },
   {
-    id: "estrategia",
-    label: "Estratégia",
+    id: "dados-mestres",
+    label: "Dados Mestres",
     items: [
-      { id: "okr", label: "Ciclos de OKR", icon: Target },
-      { id: "financeiro", label: "Metas Financeiras", icon: BarChart3 },
-      { id: "remuneracao", label: "Remuneração Variável", icon: DollarSign },
+      { id: "colaboradores", label: "Colaboradores", icon: Users },
+      { id: "estrutura", label: "Estrutura Organizacional", icon: Building2 },
     ]
   },
   {
-    id: "talentos",
-    label: "Talentos",
+    id: "seguranca",
+    label: "Segurança e Acessos",
+    items: [
+      { id: "permissoes", label: "Permissões & Acessos", icon: ShieldCheck },
+    ]
+  },
+  {
+    id: "estrategia-resultados",
+    label: "Estratégia e Resultados",
+    items: [
+      { id: "estrategia", label: "Configurações de Estratégia", icon: Compass },
+      { id: "okr", label: "Ciclos de OKR", icon: Target },
+      { id: "financeiro", label: "Metas Financeiras", icon: BarChart3 },
+      { id: "reuniao", label: "Configuração Reunião+", icon: Video },
+    ]
+  },
+  {
+    id: "pessoas-talentos",
+    label: "Pessoas e Talentos",
     items: [
       { id: "competencias", label: "Ciclos de Competências", icon: Award },
       { id: "sucessao", label: "Matriz de Sucessão", icon: Briefcase },
-      { id: "feedback", label: "Feedback & PDI", icon: MessageSquare },
+      { id: "treinamento", label: "Treinamentos", icon: GraduationCap },
     ]
   },
   {
-    id: "operacao",
-    label: "Operação",
+    id: "engajamento-cultura",
+    label: "Engajamento e Cultura",
     items: [
-      { id: "treinamento", label: "Trilhas de Treinamento", icon: GraduationCap },
-      { id: "reuniao", label: "Configuração Reunião+", icon: Video },
+      { id: "pesquisas", label: "Configurações de Pesquisas", icon: ListChecks },
+      { id: "feedback", label: "Feedback Contínuo", icon: MessageSquare },
+      { id: "diario", label: "Diário de Bordo", icon: BookOpen },
+    ]
+  },
+  {
+    id: "recompensa-reconhecimento",
+    label: "Recompensa e Reconhecimento",
+    items: [
+      { id: "remuneracao", label: "Remuneração Variável", icon: DollarSign },
+      { id: "merito", label: "Mérito/Promoção", icon: Sparkles },
     ]
   }
 ];
 
 function ConfigHub() {
-  const search = useSearch({ from: "/configuracoes" }) as any;
-  const [activeTab, setActiveTab] = useState(search.tab || "competencias");
+  // Read the validated search param — safe because validateSearch is declared above
+  const { tab: tabParam } = Route.useSearch();
+  const [activeTab, setActiveTab] = useState(tabParam ?? "competencias");
+
+  // Sync if the URL search param changes (e.g. navigating from TopNav)
+  useEffect(() => {
+    if (tabParam) setActiveTab(tabParam);
+  }, [tabParam]);
 
   // Determine which component to show
   const renderContent = () => {
-    // Platform
-    if (["estrutura", "permissoes", "notificacoes"].includes(activeTab)) return <PlatformSettings />;
-    // Strategy
-    if (["okr", "financeiro", "remuneracao"].includes(activeTab)) return <StrategySettings />;
-    // Talent
-    if (["competencias", "sucessao", "feedback"].includes(activeTab)) return <TalentSettings />;
-    // Operation
-    if (["treinamento", "reuniao"].includes(activeTab)) return <OperationSettings />;
-    
-    return <TalentSettings />; // Default
+    if (activeTab === "colaboradores") return <CollaboratorSettings />;
+    if (["config-plataforma", "notificacoes", "estrutura", "permissoes"].includes(activeTab))
+      return <PlatformSettings />;
+    if (["estrategia", "okr", "financeiro", "reuniao"].includes(activeTab))
+      return <StrategySettings />;
+    if (["competencias", "sucessao", "treinamento", "pesquisas", "feedback", "diario"].includes(activeTab))
+      return <TalentSettings />;
+    if (["remuneracao", "merito"].includes(activeTab))
+      return <OperationSettings />;
+    return <TalentSettings />;
   };
 
   return (
@@ -118,9 +158,10 @@ function ConfigHub() {
                   </p>
                   <div className="space-y-1">
                     {cat.items.map((item) => (
-                      <button
+                      <Link
                         key={item.id}
-                        onClick={() => setActiveTab(item.id)}
+                        to="/configuracoes"
+                        search={{ tab: item.id }}
                         className={cn(
                           "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
                           activeTab === item.id
@@ -130,7 +171,7 @@ function ConfigHub() {
                       >
                         <item.icon className={cn("h-4 w-4", activeTab === item.id ? "text-primary" : "text-muted-foreground")} />
                         {item.label}
-                      </button>
+                      </Link>
                     ))}
                   </div>
                 </div>

@@ -24,7 +24,10 @@ function NotFoundComponent() {
   );
 }
 
+import { PerspectiveProvider } from "../hooks/usePerspective";
+
 export const Route = createRootRoute({
+  // ... existing config ...
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -57,7 +60,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {children}
+        <PerspectiveProvider>
+          {children}
+        </PerspectiveProvider>
         <Scripts />
       </body>
     </html>
@@ -67,3 +72,4 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return <Outlet />;
 }
+

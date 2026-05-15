@@ -12,6 +12,18 @@ import {
   Clock,
   Settings2,
   ShieldCheck,
+  Zap,
+  Calculator,
+  PieChart,
+  FileText,
+  Sparkles,
+  BrainCircuit,
+  Activity,
+  LineChart as LineChartIcon,
+  ChevronRight,
+  Search,
+  Filter,
+  MoreHorizontal
 } from "lucide-react";
 import {
   LineChart,
@@ -39,12 +51,8 @@ import { MENUS } from "@/components/shell/TopNav";
 import { useState, useMemo } from "react";
 import { StrategySettings } from "@/components/settings/StrategySettings";
 import { useSearch, useNavigate } from "@tanstack/react-router";
-import {
-  Zap,
-  Calculator,
-  PieChart,
-  FileText,
-} from "lucide-react";
+import { usePerspective } from "@/hooks/usePerspective";
+import { PeriodComparator, ComparisonLegend, buildComparisonData, type ComparisonPeriod } from "@/components/shared/PeriodComparator";
 
 export const Route = createFileRoute("/estrategia")({
   component: StrategyDashboard,
@@ -60,35 +68,24 @@ export const Route = createFileRoute("/estrategia")({
 });
 
 const okrProgressData = [
-  { month: "Jan", progress: 10 },
-  { month: "Fev", progress: 25 },
-  { month: "Mar", progress: 38 },
-  { month: "Abr", progress: 48 },
-];
-
-const financeData = [
-  { month: "Jan", budget: 120, actual: 110, roi: 12 },
-  { month: "Fev", budget: 130, actual: 125, roi: 15 },
-  { month: "Mar", budget: 125, actual: 140, roi: 18 },
-  { month: "Abr", budget: 150, actual: 145, roi: 22 },
-  { month: "Mai", budget: 140, actual: 160, roi: 25 },
-  { month: "Jun", budget: 160, actual: 155, roi: 28 },
-];
-
-const areaRoiData = [
-  { name: "Vendas", value: 32, color: "#3b82f6" },
-  { name: "Produto", value: 24, color: "#10b981" },
-  { name: "Marketing", value: 18, color: "#f59e0b" },
-  { name: "CS", value: 15, color: "#ef4444" },
-  { name: "RH", value: 11, color: "#8b5cf6" },
+  { month: "Jan", progress: 10, ai_prediction: 12 },
+  { month: "Fev", progress: 25, ai_prediction: 28 },
+  { month: "Mar", progress: 38, ai_prediction: 45 },
+  { month: "Abr", progress: 48, ai_prediction: 62 },
 ];
 
 function StrategyDashboard() {
+  const { perspective } = usePerspective();
   const search = useSearch({ from: "/estrategia" }) as any;
   const navigate = useNavigate();
   const [localView, setLocalView] = useState<"dashboard" | "settings">("dashboard");
+  const [compPeriod, setCompPeriod] = useState<ComparisonPeriod>("none");
 
-  // Sync search param with local state or use param directly
+  const okrDataWithComparison = useMemo(() =>
+    compPeriod !== "none" ? buildComparisonData(okrProgressData, "progress", compPeriod) : okrProgressData,
+    [compPeriod]
+  );
+
   const activeTab = useMemo(() => {
     if (search.tab === "financeiro") return "financeiro";
     return localView;
@@ -103,361 +100,172 @@ function StrategyDashboard() {
     }
   };
 
-  return (
-    <AppShell activeNav="estrategia">
-      <main className="mx-auto max-w-[1400px] px-6 py-8">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+  const renderAdminView = () => (
+    <div className="space-y-8 animate-in fade-in duration-500">
+       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Módulo de Estratégia · {
-                activeTab === "dashboard" ? "Dashboard" : 
-                activeTab === "financeiro" ? "Análise Financeira" : "Configurações"
-              }
-            </p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-              {
-                activeTab === "dashboard" ? "Direcionamento & Performance" : 
-                activeTab === "financeiro" ? "Saúde Financeira & ROI" : "Configurações Estratégicas"
-              }
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {
-                activeTab === "dashboard" ? "Acompanhe os objetivos estratégicos e resultados-chave." : 
-                activeTab === "financeiro" ? "Exemplo de como o ROI dos OKRs e KPIs financeiros seriam exibidos." : 
-                "Defina os ciclos de OKR, metas e regras de remuneração."
-              }
-            </p>
+            <h1 className="text-2xl font-black text-foreground">Gestão de OKRs</h1>
+            <p className="text-sm text-muted-foreground">Controle operacional de ciclos e check-ins.</p>
           </div>
-        </div>
-
-        {/* Sub-navigation Pills */}
-        <div className="mt-6 flex flex-wrap gap-2">
-          {MENUS.find(m => m.key === "estrategia")?.groups?.[0]?.items.map((item) => {
-             const isFinanceLink = item.label === "Análise financeira";
-             const isActive = isFinanceLink ? activeTab === "financeiro" : (activeTab === "dashboard" && !isFinanceLink);
-             
-             return (
-               <button
-                 key={item.label}
-                 onClick={() => setView(isFinanceLink ? "financeiro" : "dashboard")}
-                 className={cn(
-                   "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium transition-all",
-                   isActive
-                     ? "border-accent bg-accent text-accent-foreground shadow-sm"
-                     : "border-border bg-card text-muted-foreground hover:border-accent/40 hover:bg-secondary hover:text-foreground"
-                 )}
-               >
-                 <item.icon className="h-3.5 w-3.5" />
-                 {item.label}
-               </button>
-             );
-          })}
-          <button
-            onClick={() => setView(activeTab === "settings" ? "dashboard" : "settings")}
-            className={cn(
-              "inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-medium transition-all shadow-sm",
-              activeTab === "settings"
-                ? "border-accent bg-accent text-accent-foreground"
-                : "border-border bg-card text-accent hover:border-accent/40 hover:bg-accent/5"
-            )}
-          >
-            <Settings2 className="h-3.5 w-3.5" />
-            {activeTab === "settings" ? "Voltar ao Dashboard" : "Configurações"}
+          <button className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-primary/90 transition-all">
+             <Plus className="h-4 w-4" /> Novo Ciclo
           </button>
-        </div>
+       </header>
 
-        {activeTab === "dashboard" && (
-          <>
-            <section className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            label="OKRs em andamento"
-            value="24"
-            icon={Target}
-            tone="default"
-            trend={{ value: "12 times ativos", positive: true }}
-          />
-          <StatCard
-            label="Progresso Geral"
-            value="48%"
-            icon={TrendingUp}
-            tone="success"
-            trend={{ value: "+5% esta semana", positive: true }}
-          />
-          <StatCard
-            label="Metas Batidas"
-            value="156"
-            icon={CheckCircle2}
-            tone="success"
-          />
-          <StatCard
-            label="Riscos Detectados"
-            value="3"
-            icon={AlertCircle}
-            tone="warning"
-          />
-        </section>
+       <div className="grid gap-6 md:grid-cols-4">
+          <StatCard label="Ciclos Ativos" value="2" icon={Clock} tone="default" />
+          <StatCard label="Check-ins Pendentes" value="142" icon={AlertCircle} tone="warning" />
+          <StatCard label="Adesão ao Ciclo" value="92%" icon={CheckCircle2} tone="success" />
+          <StatCard label="Média de Resultados" value="64%" icon={Target} tone="default" />
+       </div>
 
-        <section className="mt-10 grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-sm)]">
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <h3 className="text-base font-semibold text-foreground">Evolução do Ciclo</h3>
-                  <p className="text-xs text-muted-foreground">Progresso médio dos OKRs corporativos</p>
+       <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/20">
+             <h3 className="text-sm font-bold text-foreground">Monitoramento de Times</h3>
+             <div className="flex items-center gap-2">
+                <div className="relative"><Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" /><input type="text" placeholder="Filtrar time..." className="rounded-lg border border-border bg-background py-1.5 pl-8 pr-3 text-[11px] focus:outline-none w-40" /></div>
+             </div>
+          </div>
+          <table className="w-full text-left text-xs">
+             <thead className="bg-muted/30 border-b border-border">
+                <tr>
+                   <th className="px-6 py-3 font-bold text-muted-foreground uppercase tracking-widest text-[9px]">Time</th>
+                   <th className="px-6 py-3 font-bold text-muted-foreground uppercase tracking-widest text-[9px]">Líder</th>
+                   <th className="px-6 py-3 font-bold text-muted-foreground uppercase tracking-widest text-[9px]">OKRs</th>
+                   <th className="px-6 py-3 font-bold text-muted-foreground uppercase tracking-widest text-[9px]">Último Check-in</th>
+                   <th className="px-6 py-3 font-bold text-muted-foreground uppercase tracking-widest text-[9px]">Status</th>
+                </tr>
+             </thead>
+             <tbody className="divide-y divide-border">
+                {[
+                  { team: "Produto", lead: "Marcus Dias", okrs: 8, last: "Hoje", status: "Em dia" },
+                  { team: "Engenharia", lead: "Bruno Costa", okrs: 12, last: "há 3 dias", status: "Em dia" },
+                  { team: "Vendas", lead: "Carla Souza", okrs: 5, last: "há 12 dias", status: "Atrasado" },
+                  { team: "CS", lead: "Ana Silva", okrs: 6, last: "Ontem", status: "Em dia" },
+                ].map(row => (
+                  <tr key={row.team} className="hover:bg-muted/20 cursor-pointer transition-colors group">
+                     <td className="px-6 py-4 font-bold text-foreground">{row.team}</td>
+                     <td className="px-6 py-4 text-muted-foreground">{row.lead}</td>
+                     <td className="px-6 py-4 text-foreground">{row.okrs}</td>
+                     <td className="px-6 py-4 text-muted-foreground">{row.last}</td>
+                     <td className="px-6 py-4">
+                        <span className={cn("px-2 py-0.5 rounded-full text-[9px] font-black uppercase", row.status === "Em dia" ? "bg-success/10 text-success" : "bg-red-500/10 text-red-500")}>{row.status}</span>
+                     </td>
+                  </tr>
+                ))}
+             </tbody>
+          </table>
+       </div>
+    </div>
+  );
+
+  const renderCEOView = () => (
+    <div className="space-y-8 animate-in fade-in duration-500">
+       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div>
+            <h1 className="text-3xl font-black text-foreground tracking-tight">Inteligência Estratégica</h1>
+            <p className="text-sm text-muted-foreground">Visão holística de impacto e alinhamento organizacional.</p>
+          </div>
+          <div className="flex items-center gap-3">
+             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner"><BrainCircuit className="h-6 w-6" /></div>
+             <div className="text-right">
+                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">IA Mereo Insight</p>
+                <p className="text-xs font-bold text-foreground italic">"Probabilidade de 82% de bater a meta LATAM"</p>
+             </div>
+          </div>
+       </header>
+
+       <div className="grid gap-6 md:grid-cols-3">
+          <div className="md:col-span-2 rounded-3xl border border-border bg-card p-8 shadow-sm">
+             <div className="flex items-center justify-between mb-8">
+                <div><h3 className="text-lg font-bold text-foreground">Previsão de Desempenho do Ciclo</h3><p className="text-xs text-muted-foreground">Realidade vs. Projeção de IA para o Q2.</p></div>
+                <div className="flex items-center gap-4">
+                   <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-primary" /><span className="text-[10px] font-bold text-muted-foreground uppercase">Real</span></div>
+                   <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-primary/30" /><span className="text-[10px] font-bold text-muted-foreground uppercase">Projeção IA</span></div>
+                   <ComparisonLegend period={compPeriod} />
+                   <PeriodComparator value={compPeriod} onChange={setCompPeriod} />
                 </div>
-                <div className="flex items-center gap-1 rounded-md bg-secondary/50 p-1">
-                  {["Q1", "Q2", "Q3", "Q4"].map((q) => (
-                    <button
-                      key={q}
-                      className={cn(
-                        "rounded px-3 py-1 text-[10px] font-medium transition-colors",
-                        q === "Q2" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="h-[240px] w-full">
-                <ChartContainer
-                  config={{
-                    progress: { label: "Progresso OKR", color: "#3b82f6" },
-                  }}
-                  className="h-full w-full"
-                >
-                  <LineChart data={okrProgressData}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                    <XAxis
-                      dataKey="month"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
-                    />
-                    <YAxis
-                      hide
-                      domain={[0, 100]}
-                    />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line
-                      type="monotone"
-                      dataKey="progress"
-                      stroke="#3b82f6"
-                      strokeWidth={3}
-                      dot={{ r: 4, strokeWidth: 0, fill: "#3b82f6" }}
-                      activeDot={{ r: 6, strokeWidth: 0 }}
-                    />
-                  </LineChart>
+             </div>
+             <div className="h-[300px] w-full">
+                <ChartContainer config={{ progress: { label: "Progresso", color: "#3b82f6" }, ai_prediction: { label: "Projeção IA", color: "#94a3b8" }, progress_prev: { label: "Comparação", color: "#f59e0b" } }} className="h-full w-full">
+                   <LineChart data={okrDataWithComparison}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
+                      <YAxis hide domain={[0, 100]} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Line type="monotone" dataKey="progress" stroke="#3b82f6" strokeWidth={4} dot={{ r: 5, fill: "#3b82f6", strokeWidth: 0 }} />
+                      <Line type="monotone" dataKey="ai_prediction" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                      {compPeriod !== "none" && <Line type="monotone" dataKey="progress_prev" stroke="#f59e0b" strokeWidth={2} strokeDasharray="4 3" dot={{ r: 3, fill: "#f59e0b", strokeWidth: 0 }} />}
+                   </LineChart>
                 </ChartContainer>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">OKRs Corporativos</h3>
-              <button className="text-sm font-medium text-accent hover:underline">Ver mapa completo</button>
-            </div>
-            <div className="space-y-4">
-              <OKRCard
-                title="Expandir presença no mercado LATAM"
-                progress={72}
-                krs={[
-                  "Alcançar 100 novos clientes no México",
-                  "Estabelecer parceria com 3 distribuidores locais",
-                ]}
-              />
-              <OKRCard
-                title="Consolidar eficiência operacional"
-                progress={35}
-                krs={[
-                  "Reduzir custo de aquisição (CAC) em 15%",
-                  "Aumentar NPS para 85+",
-                ]}
-              />
-            </div>
+             </div>
           </div>
-
           <div className="space-y-6">
-            <div className="rounded-xl border border-border bg-card p-5">
-              <h3 className="mb-4 text-sm font-semibold text-foreground">Visão por Área</h3>
-              <div className="space-y-3 font-mono text-xs">
-                <div className="flex items-center justify-between">
-                  <span>Produto</span>
-                  <div className="h-1.5 w-24 rounded-full bg-secondary overflow-hidden">
-                    <div className="h-full bg-success" style={{ width: "85%" }} />
-                  </div>
-                  <span>85%</span>
+             <div className="rounded-3xl bg-[#0F172A] p-6 text-white shadow-xl relative overflow-hidden group">
+                <div className="absolute -top-10 -right-10 h-40 w-40 bg-primary/20 rounded-full blur-3xl group-hover:bg-primary/30 transition-all" />
+                <div className="flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-4"><Sparkles className="h-3 w-3" /> Radar de Alinhamento</div>
+                <div className="space-y-5 relative">
+                   <div><div className="flex items-center justify-between text-[11px] font-bold mb-1.5"><span>Vendas vs. Produto</span><span className="text-success">Forte (92%)</span></div><div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-success transition-all duration-1000" style={{ width: "92%" }} /></div></div>
+                   <div><div className="flex items-center justify-between text-[11px] font-bold mb-1.5"><span>Marketing vs. Vendas</span><span className="text-warning">Desvio (45%)</span></div><div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-warning transition-all duration-1000" style={{ width: "45%" }} /></div></div>
+                   <p className="text-[10px] text-white/50 leading-relaxed pt-2">A falta de alinhamento entre Marketing e Vendas pode custar 12% da meta de novos logos este trimestre.</p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span>Vendas</span>
-                  <div className="h-1.5 w-24 rounded-full bg-secondary overflow-hidden">
-                    <div className="h-full bg-warning" style={{ width: "42%" }} />
-                  </div>
-                  <span>42%</span>
+             </div>
+             <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+                <h3 className="text-sm font-bold text-foreground mb-4">ROI Estratégico</h3>
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30">
+                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white"><DollarSign className="h-5 w-5" /></div>
+                   <div><p className="text-xs text-muted-foreground font-bold uppercase tracking-tighter">Orçamento Alinhado</p><p className="text-xl font-black text-foreground">R$ 1.2M</p></div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span>CS</span>
-                  <div className="h-1.5 w-24 rounded-full bg-secondary overflow-hidden">
-                    <div className="h-full bg-info" style={{ width: "60%" }} />
-                  </div>
-                  <span>60%</span>
+                <div className="mt-4 grid grid-cols-2 gap-4">
+                   <div className="p-3 rounded-xl border border-border bg-secondary/20"><p className="text-[9px] text-muted-foreground font-bold uppercase">ROI Estimado</p><p className="text-sm font-black text-success">3.2x</p></div>
+                   <div className="p-3 rounded-xl border border-border bg-secondary/20"><p className="text-[9px] text-muted-foreground font-bold uppercase">Eficiência</p><p className="text-sm font-black text-primary">84%</p></div>
                 </div>
-              </div>
-            </div>
+             </div>
           </div>
-            </section>
-          </>
-        )}
+       </div>
 
-        {activeTab === "financeiro" && (
-          <div className="mt-8">
-            <FinancialAnalysisView />
-          </div>
-        )}
+       <div className="grid gap-6 md:grid-cols-2">
+          <OKRStrategicCard title="Expandir presença no mercado LATAM" status="Em Risco" impact="Crítico" progress={72} ai_insight="Foco no México: 85% dos leads concentrados lá." />
+          <OKRStrategicCard title="Consolidar eficiência operacional" status="Saudável" impact="Médio" progress={35} ai_insight="Ganhos de escala superam a inflação de custos." />
+       </div>
+    </div>
+  );
 
-        {activeTab === "settings" && (
-          <div className="mt-8">
-            <StrategySettings />
-          </div>
-        )}
+  return (
+    <AppShell activeNav="estrategia-resultados">
+      <main className="mx-auto max-w-[1400px] px-6 py-8">
+        {perspective === "admin" ? renderAdminView() : renderCEOView()}
       </main>
     </AppShell>
   );
 }
 
-function FinancialAnalysisView() {
+function OKRStrategicCard({ title, status, impact, progress, ai_insight }: { title: string, status: string, impact: string, progress: number, ai_insight: string }) {
   return (
-    <div className="space-y-24 py-12 animate-in fade-in slide-in-from-bottom-5 duration-700">
-      {/* Hero Section */}
-      <section className="text-center max-w-4xl mx-auto space-y-6">
-        <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-accent ring-1 ring-accent/20">
-          <Zap className="h-3.5 w-3.5" /> Módulo Business Intelligence
-        </div>
-        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground leading-[1.1]">
-          A Ponte entre sua <span className="bg-gradient-to-r from-accent to-blue-400 bg-clip-text text-transparent">Estratégia</span> e o <span className="italic">Caixa.</span>
-        </h2>
-        <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-          Pare de olhar apenas para o progresso das tarefas. Comece a enxergar o 
-          <strong> ROI real</strong> de cada KR e a saúde financeira da sua organização em tempo real.
-        </p>
-        <div className="pt-4">
-           <button className="h-14 px-10 rounded-full bg-accent text-accent-foreground font-bold text-base shadow-[var(--shadow-xl)] hover:scale-105 transition-all">
-             Agendar Demonstração Gratuita
-           </button>
-        </div>
-      </section>
-
-      {/* Abstract Visualization Teaser */}
-      <section className="relative mx-auto max-w-5xl overflow-hidden rounded-[2.5rem] border border-border bg-card shadow-[var(--shadow-2xl)]">
-        <div className="absolute inset-0 bg-gradient-to-tr from-accent/10 via-transparent to-blue-500/5" />
-        <div className="relative aspect-[21/9] w-full flex items-center justify-center p-8 overflow-hidden group">
-           {/* Mock Blurred UI */}
-           <div className="w-full h-full opacity-25 blur-xl select-none pointer-events-none scale-110 flex items-center justify-center gap-12">
-              <BarChart3 className="h-48 w-48 text-accent" strokeWidth={0.5} />
-              <TrendingUp className="h-64 w-64 text-accent" strokeWidth={0.5} />
-              <PieChart className="h-48 w-48 text-accent" strokeWidth={0.5} />
-           </div>
-           
-           <div className="absolute inset-0 flex items-center justify-center">
-              <div className="bg-card/60 border border-white/10 backdrop-blur-md p-8 rounded-3xl shadow-2xl text-center max-w-md transform transition-transform group-hover:scale-105">
-                 <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-accent-foreground shadow-lg shadow-accent/20">
-                    <ShieldCheck className="h-7 w-7" />
-                 </div>
-                 <h3 className="text-xl font-bold mb-2">Visibilidade Total & Segura</h3>
-                 <p className="text-sm text-muted-foreground leading-relaxed">
-                   Integre seus dados de faturamento, EBITDA e Budget diretamente aos OKRs corporativos.
-                 </p>
-              </div>
-           </div>
-        </div>
-      </section>
-
-      {/* Benefit Grid */}
-      <section className="grid gap-12 md:grid-cols-3 text-center">
-        <div className="space-y-4">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary text-primary">
-            <TrendingUp className="h-8 w-8" />
+    <div className="rounded-3xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all group">
+       <div className="flex items-start justify-between mb-6">
+          <div className="space-y-1">
+             <h4 className="text-base font-bold text-foreground leading-tight">{title}</h4>
+             <div className="flex items-center gap-2">
+                <span className={cn("px-2 py-0.5 rounded-full text-[9px] font-black uppercase", status === "Saudável" ? "bg-success/10 text-success" : "bg-red-500/10 text-red-500")}>{status}</span>
+                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">• Impacto {impact}</span>
+             </div>
           </div>
-          <h3 className="text-xl font-bold">ROI em Tempo Real</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed px-4">
-            Saiba exatamente quanto cada objetivo estratégico está gerando de valor financeiro para a companhia.
-          </p>
-        </div>
-        <div className="space-y-4">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary text-primary">
-            <Calculator className="h-8 w-8" />
-          </div>
-          <h3 className="text-xl font-bold">Previsibilidade (Forecast)</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed px-4">
-            Algoritmos inteligentes que projetam o fechamento do trimestre baseado no progresso real da operação.
-          </p>
-        </div>
-        <div className="space-y-4">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-secondary text-primary">
-            <Zap className="h-8 w-8" />
-          </div>
-          <h3 className="text-xl font-bold">Integração ERP Nativa</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed px-4">
-            Conecte SAP, Totvs, Oracle ou Excel em poucos cliques e centralize sua inteligência de gestão.
-          </p>
-        </div>
-      </section>
-
-      {/* Trust Banner */}
-      <section className="rounded-3xl bg-secondary/50 p-12 text-center border border-border/50">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-8">
-          Confiança das Maiores Gestoras do Brasil
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-12 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
-           <span className="text-2xl font-black italic tracking-tighter">FINANCE.CO</span>
-           <span className="text-2xl font-black italic tracking-tighter">GLOBAL.CORP</span>
-           <span className="text-2xl font-black italic tracking-tighter">TRIPLE.AAA</span>
-           <span className="text-2xl font-black italic tracking-tighter">ELITE.BANK</span>
-        </div>
-      </section>
-
-      {/* Social Proof / Call to Action Footer */}
-      <section className="text-center space-y-10 pb-12">
-        <div className="max-w-2xl mx-auto italic text-lg text-foreground font-medium border-l-4 border-accent pl-8 py-4 bg-secondary/30 rounded-r-2xl">
-          "A integração financeira da Mereo mudou a forma como nossos diretores discutem estratégia. Agora, cada decisão é baseada em retorno real, não apenas em entrega de prazos."
-          <span className="block mt-4 text-xs not-italic font-bold text-muted-foreground uppercase tracking-widest">— CFO, Multinacional Logística</span>
-        </div>
-        
-        <div className="space-y-4">
-          <h2 className="text-3xl font-bold">Pronto para elevar sua gestão?</h2>
-          <p className="text-muted-foreground">Experimente a potência dos OKRs financeiros hoje mesmo.</p>
-          <div className="flex justify-center gap-4 pt-4">
-            <button className="h-14 px-12 rounded-full bg-foreground text-background font-bold hover:bg-foreground/90 transition-all">
-              Agendar Demo
-            </button>
-            <button className="h-14 px-8 rounded-full border border-border bg-card font-bold hover:bg-secondary transition-all">
-              Falar com Consultor
-            </button>
-          </div>
-        </div>
-      </section>
+          <div className="text-right"><p className="text-2xl font-black text-primary">{progress}%</p></div>
+       </div>
+       <div className="h-2 w-full bg-secondary rounded-full overflow-hidden mb-6">
+          <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${progress}%` }} />
+       </div>
+       <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-3">
+          <Sparkles className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+          <p className="text-xs font-bold text-foreground/80 italic leading-relaxed">{ai_insight}</p>
+       </div>
     </div>
   );
 }
 
-function OKRCard({ title, progress, krs }: { title: string; progress: number; krs: string[] }) {
+function Plus(props: any) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5 transition-all hover:shadow-[var(--shadow-sm)]">
-      <div className="flex items-center justify-between">
-        <h4 className="font-semibold text-foreground text-sm">{title}</h4>
-        <span className="text-sm font-bold text-accent">{progress}%</span>
-      </div>
-      <div className="mt-3 h-2 w-full rounded-full bg-secondary overflow-hidden">
-        <div className="h-full bg-accent transition-all duration-500" style={{ width: `${progress}%` }} />
-      </div>
-      <ul className="mt-4 space-y-2">
-        {krs.map((kr, i) => (
-          <li key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
-            <CheckCircle2 className="h-3 w-3 text-success" />
-            {kr}
-          </li>
-        ))}
-      </ul>
-    </div>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M5 12h14" /><path d="M12 5v14" /></svg>
   );
 }

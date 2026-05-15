@@ -9,16 +9,42 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TreinamentosRouteImport } from './routes/treinamentos'
 import { Route as TalentosRouteImport } from './routes/talentos'
+import { Route as RecompensaReconhecimentoRouteImport } from './routes/recompensa-reconhecimento'
+import { Route as PerfilRouteImport } from './routes/perfil'
+import { Route as OrganogramaRouteImport } from './routes/organograma'
 import { Route as OperacaoRouteImport } from './routes/operacao'
 import { Route as EstrategiaRouteImport } from './routes/estrategia'
+import { Route as EngajamentoCulturaRouteImport } from './routes/engajamento-cultura'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ConfiguracoesCicloCycleIdRouteImport } from './routes/configuracoes.ciclo.$cycleId'
 
+const TreinamentosRoute = TreinamentosRouteImport.update({
+  id: '/treinamentos',
+  path: '/treinamentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TalentosRoute = TalentosRouteImport.update({
   id: '/talentos',
   path: '/talentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecompensaReconhecimentoRoute =
+  RecompensaReconhecimentoRouteImport.update({
+    id: '/recompensa-reconhecimento',
+    path: '/recompensa-reconhecimento',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const PerfilRoute = PerfilRouteImport.update({
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrganogramaRoute = OrganogramaRouteImport.update({
+  id: '/organograma',
+  path: '/organograma',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OperacaoRoute = OperacaoRouteImport.update({
@@ -29,6 +55,11 @@ const OperacaoRoute = OperacaoRouteImport.update({
 const EstrategiaRoute = EstrategiaRouteImport.update({
   id: '/estrategia',
   path: '/estrategia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EngajamentoCulturaRoute = EngajamentoCulturaRouteImport.update({
+  id: '/engajamento-cultura',
+  path: '/engajamento-cultura',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
@@ -51,26 +82,41 @@ const ConfiguracoesCicloCycleIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/configuracoes': typeof ConfiguracoesRouteWithChildren
+  '/engajamento-cultura': typeof EngajamentoCulturaRoute
   '/estrategia': typeof EstrategiaRoute
   '/operacao': typeof OperacaoRoute
+  '/organograma': typeof OrganogramaRoute
+  '/perfil': typeof PerfilRoute
+  '/recompensa-reconhecimento': typeof RecompensaReconhecimentoRoute
   '/talentos': typeof TalentosRoute
+  '/treinamentos': typeof TreinamentosRoute
   '/configuracoes/ciclo/$cycleId': typeof ConfiguracoesCicloCycleIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/configuracoes': typeof ConfiguracoesRouteWithChildren
+  '/engajamento-cultura': typeof EngajamentoCulturaRoute
   '/estrategia': typeof EstrategiaRoute
   '/operacao': typeof OperacaoRoute
+  '/organograma': typeof OrganogramaRoute
+  '/perfil': typeof PerfilRoute
+  '/recompensa-reconhecimento': typeof RecompensaReconhecimentoRoute
   '/talentos': typeof TalentosRoute
+  '/treinamentos': typeof TreinamentosRoute
   '/configuracoes/ciclo/$cycleId': typeof ConfiguracoesCicloCycleIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/configuracoes': typeof ConfiguracoesRouteWithChildren
+  '/engajamento-cultura': typeof EngajamentoCulturaRoute
   '/estrategia': typeof EstrategiaRoute
   '/operacao': typeof OperacaoRoute
+  '/organograma': typeof OrganogramaRoute
+  '/perfil': typeof PerfilRoute
+  '/recompensa-reconhecimento': typeof RecompensaReconhecimentoRoute
   '/talentos': typeof TalentosRoute
+  '/treinamentos': typeof TreinamentosRoute
   '/configuracoes/ciclo/$cycleId': typeof ConfiguracoesCicloCycleIdRoute
 }
 export interface FileRouteTypes {
@@ -78,43 +124,91 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/configuracoes'
+    | '/engajamento-cultura'
     | '/estrategia'
     | '/operacao'
+    | '/organograma'
+    | '/perfil'
+    | '/recompensa-reconhecimento'
     | '/talentos'
+    | '/treinamentos'
     | '/configuracoes/ciclo/$cycleId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/configuracoes'
+    | '/engajamento-cultura'
     | '/estrategia'
     | '/operacao'
+    | '/organograma'
+    | '/perfil'
+    | '/recompensa-reconhecimento'
     | '/talentos'
+    | '/treinamentos'
     | '/configuracoes/ciclo/$cycleId'
   id:
     | '__root__'
     | '/'
     | '/configuracoes'
+    | '/engajamento-cultura'
     | '/estrategia'
     | '/operacao'
+    | '/organograma'
+    | '/perfil'
+    | '/recompensa-reconhecimento'
     | '/talentos'
+    | '/treinamentos'
     | '/configuracoes/ciclo/$cycleId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ConfiguracoesRoute: typeof ConfiguracoesRouteWithChildren
+  EngajamentoCulturaRoute: typeof EngajamentoCulturaRoute
   EstrategiaRoute: typeof EstrategiaRoute
   OperacaoRoute: typeof OperacaoRoute
+  OrganogramaRoute: typeof OrganogramaRoute
+  PerfilRoute: typeof PerfilRoute
+  RecompensaReconhecimentoRoute: typeof RecompensaReconhecimentoRoute
   TalentosRoute: typeof TalentosRoute
+  TreinamentosRoute: typeof TreinamentosRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/treinamentos': {
+      id: '/treinamentos'
+      path: '/treinamentos'
+      fullPath: '/treinamentos'
+      preLoaderRoute: typeof TreinamentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/talentos': {
       id: '/talentos'
       path: '/talentos'
       fullPath: '/talentos'
       preLoaderRoute: typeof TalentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recompensa-reconhecimento': {
+      id: '/recompensa-reconhecimento'
+      path: '/recompensa-reconhecimento'
+      fullPath: '/recompensa-reconhecimento'
+      preLoaderRoute: typeof RecompensaReconhecimentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil': {
+      id: '/perfil'
+      path: '/perfil'
+      fullPath: '/perfil'
+      preLoaderRoute: typeof PerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/organograma': {
+      id: '/organograma'
+      path: '/organograma'
+      fullPath: '/organograma'
+      preLoaderRoute: typeof OrganogramaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/operacao': {
@@ -129,6 +223,13 @@ declare module '@tanstack/react-router' {
       path: '/estrategia'
       fullPath: '/estrategia'
       preLoaderRoute: typeof EstrategiaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/engajamento-cultura': {
+      id: '/engajamento-cultura'
+      path: '/engajamento-cultura'
+      fullPath: '/engajamento-cultura'
+      preLoaderRoute: typeof EngajamentoCulturaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/configuracoes': {
@@ -170,9 +271,14 @@ const ConfiguracoesRouteWithChildren = ConfiguracoesRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ConfiguracoesRoute: ConfiguracoesRouteWithChildren,
+  EngajamentoCulturaRoute: EngajamentoCulturaRoute,
   EstrategiaRoute: EstrategiaRoute,
   OperacaoRoute: OperacaoRoute,
+  OrganogramaRoute: OrganogramaRoute,
+  PerfilRoute: PerfilRoute,
+  RecompensaReconhecimentoRoute: RecompensaReconhecimentoRoute,
   TalentosRoute: TalentosRoute,
+  TreinamentosRoute: TreinamentosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
